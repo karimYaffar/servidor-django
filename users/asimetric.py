@@ -41,3 +41,26 @@ class ECC:
         
         encrypted_message = iv + ciphertext
         return binascii.hexlify(encrypted_message).decode('utf-8')
+
+
+        def decrypt_message(shared_secret, encrypted_message):
+        # Derivar la clave simétrica (AES) a partir del secreto compartido usando SHA-256
+        key = sha256(shared_secret).digest()
+        
+        # Convertir el mensaje cifrado de hexadecimal a bytes
+        encrypted_message_bytes = binascii.unhexlify(encrypted_message)
+        
+        # El primer bloque (del tamaño de AES.block_size) es el IV
+        iv = encrypted_message_bytes[:AES.block_size]
+        
+        # El resto es el ciphertext
+        ciphertext = encrypted_message_bytes[AES.block_size:]
+        
+        # Crear el descifrador AES en modo CBC con el IV extraído
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        
+        # Descifrar el mensaje y eliminar el padding
+        plaintext = unpad(cipher.decrypt(ciphertext), AES.block_size)
+        
+        return plaintext.decode('utf-8')
+
